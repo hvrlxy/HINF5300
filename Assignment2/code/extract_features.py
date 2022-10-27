@@ -60,3 +60,39 @@ def get_freq_domain_features(signal):
     all_fft_features.append(sig_fft_dc)
     all_fft_features.extend(fft_feats)
     return all_fft_features
+
+def get_similarity_features(signal):
+    all_similarity_features = []
+    window_size = len(signal)
+    # autocorrelation
+    sig_autocorr = np.correlate(signal, signal, mode='full')[window_size - 1:]
+    # aggregations over the autocorrelation signal
+    autocorr_feats = get_time_series_features(sig_autocorr)
+    all_similarity_features.extend(autocorr_feats)
+
+    # dynamic time warping
+    sig_dtw = np.zeros(window_size)
+    for i in range(window_size):
+        sig_dtw[i] = np.sum(np.absolute(signal - np.roll(signal, i)))
+    # aggregations over the dtw signal
+    dtw_feats = get_time_series_features(sig_dtw)
+    all_similarity_features.extend(dtw_feats)
+
+    # euclidean distance
+    sig_euclidean = np.zeros(window_size)
+    for i in range(window_size):
+        sig_euclidean[i] = np.sqrt(np.sum(np.square(signal - np.roll(signal, i))))
+    # aggregations over the euclidean signal
+    euclidean_feats = get_time_series_features(sig_euclidean)
+    all_similarity_features.extend(euclidean_feats)
+    return all_similarity_features
+
+def get_wavelet_features(signal):
+    all_wavelet_features = []
+    window_size = len(signal)
+    # wavelet transform
+    sig_wavelet = np.abs(np.fft.fft(signal))
+    # aggregations over the wavelet signal
+    wavelet_feats = get_time_series_features(sig_wavelet)
+    all_wavelet_features.extend(wavelet_feats)
+    return all_wavelet_features
